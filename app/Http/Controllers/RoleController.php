@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class RoleController extends Controller
 {
@@ -75,6 +77,65 @@ class RoleController extends Controller
             return dataFormat(0, '角色更新成功');
         }
         return dataFormat(1, '角色未修改');
+    }
+
+    //获取角色的权限
+    public function permission(Request $request)
+    {
+        $role_id = $request->input('role_id');
+        if ($role_id <= 0) {
+            return dataFormat(1, '参数错误[ROLE_ID]');
+        }
+        $role = Role::find($role_id);
+        if (empty($role)) {
+            return dataFormat(1, '角色不存在或已删除');
+        }
+        $had=[];
+        foreach ($role->permissions as $permission) {
+            $had[$permission->id]=$permission->id;
+        }
+        $permissions=Permission::all();
+        $result=[];
+        foreach ($permissions as $permission) {
+            $result[] = [
+                'permission_id'   => $permission->id,
+                'permission_name' => $permission->name,
+                'is_had'    => isset($had[$permission->id]) ? 1 : 0,
+            ];
+        }
+        return dataFormat(0, 'ok', $result);
+
+    }
+
+    //同步角色的权限
+    public function sync_permission(Request $request)
+    {
+        $role_id = $request->input('role_id');
+        if ($role_id <= 0) {
+            return dataFormat(1, '参数错误[ROLE_ID]');
+        }
+        $arr = $request->input('permission_ids');
+        if (!is_array($arr)) {
+            return dataFormat(1, '参数错误[PERMISSION_IDS]');
+        }
+        $arr = array_unique($arr);
+        $arr = Arr::where($arr, function ($value, $key) {
+            return $value > 0;
+        });
+        if (empty($arr)) {
+            return dataFormat(1, '参数无效[PERMISSION_IDS]');
+        }
+        $permission_ids = Permission::whereIn('id', $arr)->pluck('id');
+        if ($permission_ids->isEmpty()) {
+            return dataFormat(2, '参数无效[PERMISSION_IDS]');
+        }
+        $role = Role::find($role_id);
+        if (empty($role)) {
+            return dataFormat(1, '权限不存在或已删除');
+        }
+        $result =$role->permissions()->sync($permission_ids);
+        // dump($result);
+        return dataFormat(0, 'ok');
     }
 
 

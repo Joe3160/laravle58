@@ -57,9 +57,11 @@ class DemoController extends Controller
         dump($result);
     }
 
-    public function user()
+    public function user(Request $request)
     {
+        $user=$request->user();
         $user = User::find(1);
+
         dump($user);
 
     }

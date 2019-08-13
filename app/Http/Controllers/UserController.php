@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -15,7 +18,6 @@ class UserController extends Controller
         $page_size = $page_size > 0 ? $page_size : 0;
         $result = User::select('id', 'name', 'phone', 'created_at')->paginate($page_size);
         return dataFormat(0, 'ok', $result);
-
     }
 
     public function add(Request $request)
@@ -109,17 +111,68 @@ class UserController extends Controller
         return dataFormat(1, '用户删除失败');
     }
 
-
     //获取所有角色
-    public function user_roles()
+    public function roles(Request $request)
     {
-        
-
-        $roles = Role::select('id', 'name')->all();
-        return dataFormat(0, 'ok', $roles);
+        // $user = $request->user();
+        $user_id = $request->input('user_id');
+        if ($user_id <= 0) {
+            return dataFormat(1, '参数错误[USER_ID]');
+        }
+        $user = User::find($user_id);
+        if (empty($user)) {
+            return dataFormat(1, '用户不存在或已删除');
+        }
+        $had=[];
+        foreach ($user->roles as $role) {
+            $had[$role->id]=$role->id;
+        }
+        $roles=Role::all();
+        $result=[];
+        foreach ($roles as $role) {
+            $result[] = [
+                'role_id'   => $role->id,
+                'role_name' => $role->name,
+                'is_had'    => isset($had[$role->id]) ? 1 : 0,
+            ];
+        }
+        return dataFormat(0, 'ok', $result);
+        // $result = DB::table('roles AS p1')->select('p1.id AS role_id', 'p1.name AS role_name', 'p3.id AS user_id')->leftJoin('role_user AS p2', 'p1.id', '=', 'p2.role_id')->leftJoin('users AS p3', function ($join) use ($user) {
+        //     return $join->on('p3.id', '=', 'p2.user_id')->where('p3.id', '=', $user->id)->whereNull('p3.deleted_at');
+        // })->whereNull('p1.deleted_at')->groupBy('p1.id')->get();
+        // return dataFormat(0, 'ok', $result);
     }
 
-
+    //同步并设置用户角色
+    public function sync_roles(Request $request)
+    {
+        // $user = $request->user();
+        $user_id = $request->input('user_id');
+        if ($user_id <= 0) {
+            return dataFormat(1, '参数错误[USER_ID]');
+        }
+        $arr = $request->input('role_ids');
+        if (!is_array($arr)) {
+            return dataFormat(1, '参数错误[ROLE_IDS]');
+        }
+        $arr = array_unique($arr);
+        $arr = Arr::where($arr, function ($value, $key) {
+            return $value > 0;
+        });
+        if (empty($arr)) {
+            return dataFormat(1, '参数无效[ROLE_IDS]');
+        }
+        $roles_ids = Role::whereIn('id', $arr)->pluck('id');
+        if ($roles_ids->isEmpty()) {
+            return dataFormat(2, '参数无效[ROLE_IDS]');
+        }
+        $user = User::find($user_id);
+        if (empty($user)) {
+            return dataFormat(1, '用户不存在或已删除');
+        }
+        $result =$user->roles()->sync($roles_ids);
+        return dataFormat(0, 'ok');
+    }
 
 
 }
