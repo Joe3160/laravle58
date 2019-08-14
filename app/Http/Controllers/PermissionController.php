@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Permission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PermissionController extends Controller
 {
@@ -46,7 +47,7 @@ class PermissionController extends Controller
             'name' => $name
         ]);
         $permission->unique_key = $unique_key;
-        $permission->uri = $request->input('uri');
+        $permission->uri = ltrim($request->input('uri'));
         $permission->remark = $remark;
         $permission->parent_id = $parent_id;
         $permission->is_menu = (int)$request->input('is_menu');
@@ -95,7 +96,7 @@ class PermissionController extends Controller
             $permission->is_menu = $request->input('is_menu') ? 1 : 0;
         }
         if ($request->filled('uri')) {
-            $permission->uri = $request->input('uri');
+            $permission->uri = ltrim($request->input('uri'), '/');
         }
         if ($permission->save()) {
             return dataFormat(0, '权限更新成功');
@@ -114,6 +115,11 @@ class PermissionController extends Controller
         $permission = Permission::find($id);
         if (empty($permission)) {
             return dataFormat(1, '权限不存在或已删除');
+        }
+        $roles=$permission->has('roles')->get();
+        if ($roles->isNotEmpty()) {
+            $first=$roles->first();
+            return dataFormat(1, '权限已分配给角色【'.$first->name.'】，不允许删除');
         }
         $bool = $permission->delete();
         if ($bool) {

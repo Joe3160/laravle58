@@ -21,16 +21,18 @@ class RoleController extends Controller
     //添加角色
     public function add(Request $request)
     {
-        $name = $request->input('name');
+        $name = $request->input('name', '');
+        if (empty($name)) {
+            return dataFormat(1, '角色名不能为空');
+        }
         $count = Role::where('name', $name)->first();
         if (!empty($count)) {
             return dataFormat(1, '角色已经存在!');
         }
-        $remark = $request->input('remark');
+        $remark = $request->input('remark', '');
         $role = Role::firstOrNew([
             'name' => $name
         ]);
-        $role->name = $name;
         $role->remark = $remark;
         if ($role->save()) {
             return dataFormat(0, '角色添加成功');
@@ -90,21 +92,20 @@ class RoleController extends Controller
         if (empty($role)) {
             return dataFormat(1, '角色不存在或已删除');
         }
-        $had=[];
+        $had = [];
         foreach ($role->permissions as $permission) {
-            $had[$permission->id]=$permission->id;
+            $had[$permission->id] = $permission->id;
         }
-        $permissions=Permission::all();
-        $result=[];
+        $permissions = Permission::all();
+        $result = [];
         foreach ($permissions as $permission) {
             $result[] = [
                 'permission_id'   => $permission->id,
                 'permission_name' => $permission->name,
-                'is_had'    => isset($had[$permission->id]) ? 1 : 0,
+                'is_had'          => isset($had[$permission->id]) ? 1 : 0,
             ];
         }
         return dataFormat(0, 'ok', $result);
-
     }
 
     //同步角色的权限
@@ -133,12 +134,10 @@ class RoleController extends Controller
         if (empty($role)) {
             return dataFormat(1, '权限不存在或已删除');
         }
-        $result =$role->permissions()->sync($permission_ids);
+        $result = $role->permissions()->sync($permission_ids);
         // dump($result);
         return dataFormat(0, 'ok');
     }
-
-
 
 
 }

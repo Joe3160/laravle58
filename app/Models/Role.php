@@ -9,6 +9,8 @@ class Role extends Model
 {
     use SoftDeletes;
 
+    protected $guarded=[];
+
     //
     public function permissions()
     {
