@@ -179,8 +179,7 @@ class UserController extends Controller
     public function permission(Request $request, UserService $userService)
     {
         $userSession = $request->user();
-        $user = User::find($userSession->id);//同个模型实例为何$userSession取不出关联关系
-        $result = $userService->getPermission($user);
+        $result = $userService->getPermissionTree($userSession->id);
         return $result;
     }
 
