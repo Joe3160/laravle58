@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -123,12 +124,12 @@ class UserController extends Controller
         if (empty($user)) {
             return dataFormat(1, '用户不存在或已删除');
         }
-        $had=[];
+        $had = [];
         foreach ($user->roles as $role) {
-            $had[$role->id]=$role->id;
+            $had[$role->id] = $role->id;
         }
-        $roles=Role::all();
-        $result=[];
+        $roles = Role::all();
+        $result = [];
         foreach ($roles as $role) {
             $result[] = [
                 'role_id'   => $role->id,
@@ -170,8 +171,17 @@ class UserController extends Controller
         if (empty($user)) {
             return dataFormat(1, '用户不存在或已删除');
         }
-        $result =$user->roles()->sync($roles_ids);
+        $result = $user->roles()->sync($roles_ids);
         return dataFormat(0, 'ok');
+    }
+
+    //获取当前登陆用户权限
+    public function permission(Request $request, UserService $userService)
+    {
+        $userSession = $request->user();
+        $user = User::find($userSession->id);//同个模型实例为何$userSession取不出关联关系
+        $result = $userService->getPermission($user);
+        return $result;
     }
 
 

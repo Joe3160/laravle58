@@ -77,3 +77,19 @@ function recursion($arr = [])
     return $arr;
 }
 
+function getTree($data, $pid = 0, $sub_name = 'sub', $parent_name = 'parent_id', $id_name = 'id')
+{
+    $tree = [];
+    foreach ($data as $k => $v) {
+        if ($v[$parent_name] == $pid) {
+            $v[$sub_name] = getTree($data, $v[$id_name], $sub_name, $parent_name, $id_name);
+            if (empty($v[$sub_name])) {
+                unset($v[$sub_name]);//删除空数据
+            }
+            $tree[] = $v;
+            unset($data[$k]);//减少内存消耗
+        }
+    }
+    return $tree;
+}
+

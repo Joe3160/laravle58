@@ -48,6 +48,8 @@ Route::middleware(['login'])->group(function () {
         Route::any('roles', 'UserController@roles');
         //给用户设置角色
         Route::any('sync_roles', 'UserController@sync_roles');
+        //获取用户权限
+        Route::any('permission', 'UserController@permission');
     });
 });
 //登陆

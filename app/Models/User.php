@@ -9,6 +9,8 @@ class User extends Model
 {
     use SoftDeletes;
 
+    protected $guarded = ['is_admin'];
+
     //用户拥有多个角色,多对多
     public function roles()
     {

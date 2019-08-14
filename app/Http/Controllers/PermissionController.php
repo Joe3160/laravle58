@@ -20,30 +20,36 @@ class PermissionController extends Controller
     public function add(Request $request)
     {
         $name = $request->input('name');
+        if (empty($name)) {
+            return dataFormat(1, '权限名不能为空');
+        }
         $count = Permission::where('name', $name)->first();
         if (!empty($count)) {
             return dataFormat(1, '权限名已经存在!');
         }
-        $uri = $request->input('uri');
+        $unique_key = $request->input('unique_key');
+        if (!$unique_key) {
+            return dataFormat(1, '权限名不能为空');
+        }
         $count = Permission::where([
-            ['name', $name],
-            ['uri', $uri],
+            ['unique_key', $unique_key],
         ])->first();
         if (!empty($count)) {
-            return dataFormat(1, '权限地址已经存在!');
+            return dataFormat(1, '权限标识已经存在!');
+        }
+        $parent_id = (int)$request->input('parent_id');
+        if ($parent_id < 0 || $parent_id > 0 && !Permission::find($parent_id)) {
+            return dataFormat(1, '权限上级菜单无效');
         }
         $remark = $request->input('remark');
         $permission = Permission::firstOrNew([
             'name' => $name
         ]);
+        $permission->unique_key = $unique_key;
+        $permission->uri = $request->input('uri');
         $permission->remark = $remark;
-        $parent_id = (int)$request->input('parent_id');
-        if ($parent_id < 0 || $parent_id > 0 && !Permission::find($parent_id)) {
-            return dataFormat(1, '权限上级菜单无效');
-        }
         $permission->parent_id = $parent_id;
         $permission->is_menu = (int)$request->input('is_menu');
-        $permission->uri = $uri;
         if ($permission->save()) {
             return dataFormat(0, '权限添加成功');
         }
@@ -73,6 +79,17 @@ class PermissionController extends Controller
                 return dataFormat(1, '权限上级菜单无效');
             }
             $permission->parent_id = $parent_id;
+        }
+        if ($request->filled('unique_key')) {
+            $unique_key = $request->input('unique_key');
+            $count = Permission::where([
+                ['unique_key', '=', $unique_key],
+                ['id', '<>', $permission->id],
+            ])->first();
+            if ($count) {
+                return dataFormat(1, '权限标识已存在');
+            }
+            $permission->unique_key = $unique_key;
         }
         if ($request->filled('is_menu')) {
             $permission->is_menu = $request->input('is_menu') ? 1 : 0;
