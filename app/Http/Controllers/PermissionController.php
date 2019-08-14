@@ -24,8 +24,11 @@ class PermissionController extends Controller
         if (!empty($count)) {
             return dataFormat(1, '权限名已经存在!');
         }
-        $uri=$request->input('uri');
-        $count = Permission::where('uri', $uri)->first();
+        $uri = $request->input('uri');
+        $count = Permission::where([
+            ['name', $name],
+            ['uri', $uri],
+        ])->first();
         if (!empty($count)) {
             return dataFormat(1, '权限地址已经存在!');
         }
@@ -34,6 +37,12 @@ class PermissionController extends Controller
             'name' => $name
         ]);
         $permission->remark = $remark;
+        $parent_id = (int)$request->input('parent_id');
+        if ($parent_id < 0 || $parent_id > 0 && !Permission::find($parent_id)) {
+            return dataFormat(1, '权限上级菜单无效');
+        }
+        $permission->parent_id = $parent_id;
+        $permission->is_menu = (int)$request->input('is_menu');
         $permission->uri = $uri;
         if ($permission->save()) {
             return dataFormat(0, '权限添加成功');
@@ -57,6 +66,16 @@ class PermissionController extends Controller
         }
         if ($request->filled('remark')) {
             $permission->remark = $request->input('remark');
+        }
+        if ($request->filled('parent_id')) {
+            $parent_id = (int)$request->input('parent_id');
+            if ($parent_id < 0 || $parent_id > 0 && !Permission::find($parent_id)) {
+                return dataFormat(1, '权限上级菜单无效');
+            }
+            $permission->parent_id = $parent_id;
+        }
+        if ($request->filled('is_menu')) {
+            $permission->is_menu = $request->input('is_menu') ? 1 : 0;
         }
         if ($request->filled('uri')) {
             $permission->uri = $request->input('uri');

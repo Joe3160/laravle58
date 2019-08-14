@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50724
 File Encoding         : 65001
 
-Date: 2019-08-13 18:54:33
+Date: 2019-08-14 10:18:19
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -64,7 +64,7 @@ CREATE TABLE `wja_permissions` (
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------
 -- Records of wja_permissions
@@ -79,6 +79,8 @@ INSERT INTO `wja_permissions` VALUES ('8', '0', '1', '客户管理', null, null,
 INSERT INTO `wja_permissions` VALUES ('9', '8', '1', '客户列表', '', '/customer/index', '二级菜单-客户列表', null, '2019-08-13 18:45:42', '2019-08-13 18:45:46');
 INSERT INTO `wja_permissions` VALUES ('10', '8', '0', '客户详情', null, '/customer/detail', '二级菜单-客户详情', null, '2019-08-13 18:45:48', '2019-08-13 18:45:51');
 INSERT INTO `wja_permissions` VALUES ('11', '8', '0', '添加客户', null, '/customer/add', '二级菜单-添加客户', null, '2019-08-13 18:47:02', '2019-08-13 18:47:04');
+INSERT INTO `wja_permissions` VALUES ('12', '0', '1', '商户管理', null, null, '一级菜单-商户管理', null, '2019-08-14 10:11:28', '2019-08-14 10:11:28');
+INSERT INTO `wja_permissions` VALUES ('13', '12', '1', '商户列表', null, '/store/index', '二级菜单-商户列表', null, '2019-08-14 10:14:39', '2019-08-14 10:14:39');
 
 -- ----------------------------
 -- Table structure for wja_permission_role
@@ -172,7 +174,7 @@ CREATE TABLE `wja_users` (
 -- ----------------------------
 -- Records of wja_users
 -- ----------------------------
-INSERT INTO `wja_users` VALUES ('1', '1', 'admin', '694995669@qq.com', '18244973184', '$2y$10$NjvQ7tBNtOJ6qFEMoRRMr.YdCCvTOLUMVTn9r9KwcJLo9PMTnPpGK', '5d525acd6f629', '2019-08-13 14:38:05', null, '2019-08-09 10:07:14', '2019-08-13 14:38:05');
+INSERT INTO `wja_users` VALUES ('1', '1', 'admin', '694995669@qq.com', '18244973184', '$2y$10$NjvQ7tBNtOJ6qFEMoRRMr.YdCCvTOLUMVTn9r9KwcJLo9PMTnPpGK', '5d536d666724b', '2019-08-14 10:09:42', null, '2019-08-09 10:07:14', '2019-08-14 10:09:42');
 INSERT INTO `wja_users` VALUES ('2', '0', 'fuwu', '', '13512783986', '$2y$10$NjvQ7tBNtOJ6qFEMoRRMr.YdCCvTOLUMVTn9r9KwcJLo9PMTnPpGK', null, null, null, '2019-08-12 17:54:04', '2019-08-12 17:54:04');
 INSERT INTO `wja_users` VALUES ('5', '0', 'lingshou', '', '13800138000', '$2y$10$3/ysU6ZcPD0E28jdGTtFTueMkhxeNq15MoJ3M2IMNP6AVn2FKCV2W', null, null, null, '2019-08-12 18:18:46', '2019-08-12 18:20:17');
 INSERT INTO `wja_users` VALUES ('6', '0', 'fuwu0', '', '13800138001', '$2y$10$tx.ezcgkA5Vv7FsQgyvIJuAP2s8eiXI2xrAqX35rjPJs4Pq3R3rdS', null, null, null, '2019-08-13 14:40:24', '2019-08-13 14:40:24');
