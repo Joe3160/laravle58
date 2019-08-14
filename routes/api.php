@@ -17,7 +17,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::middleware(['login','permission'])->group(function () {
+Route::middleware(['login', 'permission'])->group(function () {
     //角色管理
     Route::prefix('role')->group(function () {
         Route::any('index', 'RoleController@index');
@@ -46,7 +46,7 @@ Route::middleware(['login','permission'])->group(function () {
         Route::any('del', 'UserController@del');
         //获取用户的的角色
         Route::any('roles', 'UserController@roles');
-        //给用户设置角色
+        //更新用户的的角色
         Route::any('sync_roles', 'UserController@sync_roles');
     });
 });

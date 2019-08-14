@@ -44,7 +44,7 @@ class UserService
                 'is_menu'    => $item->is_menu,
                 'name'       => $item->name,
                 'unique_key' => $item->unique_key,
-                'uri'        => $item->uri ? 'api' . Str::start($item->uri, '/') : '',
+                'uri'        => $item->uri ? Str::start($item->uri, '/') : '',
             ];
         });
         return dataFormat(0, 'ok', $permission);
