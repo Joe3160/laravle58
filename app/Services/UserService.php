@@ -20,9 +20,9 @@ use Illuminate\Support\Str;
 class UserService
 {
     //获取权限目录树
-    public function getPermissionTree($user_id, $flag)
+    public function getPermissionTree($user_id, $flag,$topTittle=false)
     {
-        $result = $this->getPermissionList($user_id, $flag);
+        $result = $this->getPermissionList($user_id, $flag,$topTittle);
         if ($result['code'] !== '0') {
             return $result;
         }
@@ -31,8 +31,14 @@ class UserService
         return dataFormat(0, 'ok', $tree);
     }
 
-    //获取权限列表
-    public function getPermissionList($user_id, $flag = false)
+    /**
+     * 获取权限列表
+     * @param $user_id
+     * @param bool $flag       是否获取菜单标题
+     * @param bool $topTittle  是否只获取第一级菜单
+     * @return array
+     */
+    public function getPermissionList($user_id, $flag = false, $topTittle = false)
     {
         $user = User::find($user_id);
         if (empty($user)) {
@@ -42,13 +48,17 @@ class UserService
         if ($user->is_admin) {//超级管理员
             $permission = Permission::when($flag, function ($query) {
                 return $query->where('is_menu', 1);
+            })->when($topTittle, function ($query) {
+                return $query->where('parent_id', 0);
             })->get();
         } else {
             foreach ($user->roles as $role) {
-                $temp=$role->permissions()->when($flag, function ($query) {//只获取权限菜单标题
-                    return $query->where('permissions.is_menu',1);
+                $temp = $role->permissions()->when($flag, function ($query) {//只获取权限菜单标题
+                    return $query->where('permissions.is_menu', 1);
+                })->when($topTittle, function ($query) {
+                    return $query->where('permissions.parent_id', 0);
                 })->get();
-                $permission=$permission->concat($temp);
+                $permission = $permission->concat($temp);
             }
         }
         $permission = $permission->unique('id')->values()->map(function ($item) {

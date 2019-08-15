@@ -50,9 +50,15 @@ Route::middleware(['login', 'permission'])->group(function () {
         Route::any('sync_roles', 'UserController@sync_roles');
     });
 });
-//获取用户权限列表
-Route::any('user/permission', 'UserController@permission')->middleware(['login']);
 
+Route::middleware(['login'])->group(function () {
+    Route::prefix('home')->group(function () {
+        //首页菜单
+        Route::any('menu', 'HomeController@menu');
+        //权限菜单-一级菜单--创建权限时选择分类使用
+        Route::any('menu_title', 'HomeController@menu_title');
+    });
+});
 //登陆
 Route::any('login', 'LoginController@login');
 //退出
