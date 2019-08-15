@@ -6,6 +6,7 @@ use App\Permission;
 use App\Role;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class DemoController extends Controller
@@ -70,12 +71,40 @@ class DemoController extends Controller
     {
         $user = \App\Models\User::find(1);
         $role = \App\Models\Role::find(1);
-        dump($user->hasRole($role));
+        dump($user->has('users'));
     }
 
     public function test3()
     {
         $role = \App\Models\Role::find(1);
         dump($role->permissions);
+    }
+
+    public function test4()
+    {
+        $role=\App\Models\Role::find(1);
+        dump($role->users);
+        dump($role->has('users')->first());
+        //$a=$role->users()->detach(1);
+        $a=$role->permissions()->detach();
+        dump($a);
+    }
+
+    public function test5()
+    {
+        $result=DB::transaction(function () {
+            return dataFormat(0,'ok');
+        });
+        return $result;
+    }
+
+    public function test6()
+    {
+        try {
+            throw new \Exception('888');
+        } catch (\Exception $e) {
+            Log::error($e);
+            // error_log($e->getMessage());
+        }
     }
 }

@@ -6,6 +6,8 @@ use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RoleController extends Controller
 {
@@ -51,11 +53,21 @@ class RoleController extends Controller
         if (empty($role)) {
             return dataFormat(1, '角色不存在或已删除');
         }
-        $bool = $role->delete();
-        if ($bool) {
-            return dataFormat(0, '角色删除成功');
+        $user = $role->has('users')->first();
+        if ($user) {
+            return dataFormat(1, '角色已授予' . $user->name . '，删除前须先解绑');
         }
-        return dataFormat(1, '角色删除失败');
+        try {
+            DB::beginTransaction();
+            $role->permissions()->detach();//关联删除
+            $role->delete();
+            DB::commit();
+            return dataFormat(0, '角色删除成功');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error($e);
+            return dataFormat(1, '系统异常');
+        }
     }
 
     //更新角色
@@ -100,12 +112,14 @@ class RoleController extends Controller
         $result = [];
         foreach ($permissions as $permission) {
             $result[] = [
-                'permission_id'   => $permission->id,
+                'id'              => $permission->id,
+                'parent_id'       => $permission->parent_id,
                 'permission_name' => $permission->name,
                 'is_had'          => isset($had[$permission->id]) ? 1 : 0,
             ];
         }
-        return dataFormat(0, 'ok', $result);
+        $tree = getTree($result);
+        return dataFormat(0, 'ok', $tree);
     }
 
     //同步角色的权限
@@ -136,7 +150,7 @@ class RoleController extends Controller
         }
         $result = $role->permissions()->sync($permission_ids);
         // dump($result);
-        return dataFormat(0, 'ok');
+        return dataFormat(0, '更新成功');
     }
 
 
